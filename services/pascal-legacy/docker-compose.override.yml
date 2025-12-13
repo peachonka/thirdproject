@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  pascal-legacy:
+    build: .
+    volumes:
+      - ./output:/app/output
+      - ./logs:/app/logs
+    environment:
+      - PGHOST=postgres
+      - PGPORT=5432
+      - PGUSER=space_user
+      - PGPASSWORD=space_pass
+      - PGDATABASE=space_db
+      - CSV_OUT_DIR=/app/output
+      - LOG_DIR=/app/logs
+      - GEN_PERIOD_SEC=300
+      - GENERATE_EXCEL=true
+      - RUST_HOST=rust-iss
+      - RUST_PORT=3001
+    depends_on:
+      - postgres
+      - rust-iss
+    restart: unless-stopped
+    networks:
+      - default

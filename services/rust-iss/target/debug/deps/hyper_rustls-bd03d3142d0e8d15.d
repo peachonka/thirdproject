@@ -1,0 +1,9 @@
+C:\Users\User\Desktop\5_семестр\Фреймворки\thirdproject\he-path-of-the-samurai\services\rust-iss\target\debug\deps\hyper_rustls-bd03d3142d0e8d15.d: C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-rustls-0.24.2\src\lib.rs C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-rustls-0.24.2\src\config.rs C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-rustls-0.24.2\src\connector.rs C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-rustls-0.24.2\src\connector\builder.rs C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-rustls-0.24.2\src\stream.rs
+
+C:\Users\User\Desktop\5_семестр\Фреймворки\thirdproject\he-path-of-the-samurai\services\rust-iss\target\debug\deps\libhyper_rustls-bd03d3142d0e8d15.rmeta: C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-rustls-0.24.2\src\lib.rs C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-rustls-0.24.2\src\config.rs C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-rustls-0.24.2\src\connector.rs C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-rustls-0.24.2\src\connector\builder.rs C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-rustls-0.24.2\src\stream.rs
+
+C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-rustls-0.24.2\src\lib.rs:
+C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-rustls-0.24.2\src\config.rs:
+C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-rustls-0.24.2\src\connector.rs:
+C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-rustls-0.24.2\src\connector\builder.rs:
+C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\hyper-rustls-0.24.2\src\stream.rs:

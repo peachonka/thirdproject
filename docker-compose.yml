@@ -1,0 +1,50 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: space_db
+      POSTGRES_USER: space_user
+      POSTGRES_PASSWORD: space_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U space_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  rust-app:
+    build: ./services/rust-iss
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgres://space_user:space_pass@postgres:5432/space_db
+      REDIS_URL: redis://redis:6379
+      NASA_API_KEY: ${NASA_API_KEY:-demo_key}
+    volumes:
+      - ./services/rust-iss:/app
+      - cargo-cache:/usr/local/cargo/registry
+
+volumes:
+  postgres_data:
+  redis_data:
+  cargo-cache:
