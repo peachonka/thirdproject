@@ -22,10 +22,7 @@ use tower_http::{
     timeout::TimeoutLayer,
     trace::TraceLayer,
     cors::CorsLayer,
-    // limit::RateLimitLayer,
 };
-
-use tower::limit::RateLimitLayer;
 
 // Наши модули
 mod domain;
@@ -70,10 +67,11 @@ struct Health {
 
 #[derive(Clone)]
 struct AppState {
+    db: sea_orm::DatabaseConnection,
     iss_service: Arc<IssService>,
     legacy_service: Arc<LegacyService<SeaOrmLegacyRepository>>,
     space_service: Arc<SpaceService>,
-    osdr_service: Arc<OsdrService>,
+    osdr_service: Arc<OsdrService<SeaOrmOsdrRepository>>,
     cache: Arc<CacheService>,
     nasa_url: String,
     nasa_key: String,
@@ -117,10 +115,17 @@ async fn main() -> anyhow::Result<()> {
     let iss_service = Arc::new(IssService::new(iss_repo, cache.clone()));
     let legacy_service = Arc::new(LegacyService::new(legacy_repo));
     let space_service = Arc::new(SpaceService::new(space_repo, cache.clone()));
-    let osdr_repo = Arc::new(OsdrRepositoryImpl::new(db.clone()));
-    let osdr_service = Arc::new(OsdrService::new(osdr_repo));
+    
+    let osdr_repo = Arc::new(SeaOrmOsdrRepository::new(db.clone()));
+    
+    let osdr_service = Arc::new(OsdrService::new(
+        osdr_repo,
+        nasa_url.clone(),
+        nasa_key.clone(),
+    ));
 
     let state = Arc::new(AppState {
+        db: db.clone(),
         iss_service: iss_service.clone(),
         legacy_service: legacy_service.clone(),
         space_service: space_service.clone(),
@@ -153,14 +158,8 @@ async fn main() -> anyhow::Result<()> {
         .route("/space/refresh", get(space_controller::space_refresh_handler))
         .route("/space/summary", get(space_controller::space_summary_handler))
         .with_state(state)
-        .layer(
-            ServiceBuilder::new()
-                .layer(RateLimitLayer::new(100, Duration::from_secs(60)))
-                .layer(CompressionLayer::new())
-                .layer(TimeoutLayer::new(Duration::from_secs(30)))
-                .layer(TraceLayer::new_for_http())
-                .layer(CorsLayer::permissive()),
-        );
+        .layer(TraceLayer::new_for_http())
+        .layer(CorsLayer::permissive());
 
     let listener = tokio::net::TcpListener::bind(("0.0.0.0", 3000)).await?;
     info!("rust_iss listening on 0.0.0.0:3000");

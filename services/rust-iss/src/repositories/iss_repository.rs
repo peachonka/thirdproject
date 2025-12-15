@@ -1,15 +1,15 @@
 use async_trait::async_trait;
 use sea_orm::{
     ActiveModelTrait, DatabaseConnection, EntityTrait,
-    QueryOrder, Set, DbErr, Value
+    QueryOrder, Set, DbErr, QuerySelect, ActiveValue
 };
-use serde_json::Value;
+use serde_json::Value as JsonValue;
+use chrono::Utc;
 use crate::entities::iss_fetch_log;
-use sea_orm::QuerySelect;
 
 #[async_trait]
 pub trait IssRepository: Send + Sync {
-    async fn save_fetch(&self, source_url: &str, payload: Value) -> Result<i64, DbErr>;
+    async fn save_fetch(&self, source_url: &str, payload: JsonValue) -> Result<i64, DbErr>;
     async fn get_latest(&self) -> Result<Option<iss_fetch_log::Model>, DbErr>;
     async fn get_last_n(&self, n: u64) -> Result<Vec<iss_fetch_log::Model>, DbErr>;
 }
@@ -26,11 +26,13 @@ impl SeaOrmIssRepository {
 
 #[async_trait]
 impl IssRepository for SeaOrmIssRepository {
-    async fn save_fetch(&self, source_url: &str, payload: Value) -> Result<i64, DbErr> {
+    async fn save_fetch(&self, source_url: &str, payload: JsonValue) -> Result<i64, DbErr> {
+        // SeaORM автоматически конвертирует DateTime<Utc> в DateTimeUtc
         let model = iss_fetch_log::ActiveModel {
+            id: ActiveValue::NotSet, // Будет автоинкремент
+            fetched_at: Set(Utc::now().into()), // Конвертируем в DateTime<Utc>
             source_url: Set(source_url.to_string()),
-            payload: Set(Value::Json(Some(serde_json::to_value(payload).unwrap())))
-            ..Default::default()
+            payload: Set(JsonValue::from(payload).into()), // Конвертируем в Json
         };
 
         let result = model.insert(&self.db).await?;
