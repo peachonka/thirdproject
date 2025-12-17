@@ -10,7 +10,7 @@ class ApodController extends Controller
 {
     private function base(): string
     {
-        return getenv('RUST_BASE') ?: 'http://rust_iss:3000';
+        return getenv('RUST_BASE') ?: 'http://rust_iss:3001';
     }
 
     public function index(Request $request)

@@ -1,18 +1,30 @@
-FROM php:8.3-fpm-alpine
+# ./services/php-web/Dockerfile
+FROM php:8.2-apache
 
-# пакеты и расширения
-RUN apk add --no-cache bash curl git unzip rsync postgresql-dev \
- && docker-php-ext-install pdo pdo_pgsql
+# Устанавливаем системные зависимости и расширения PHP
+RUN apt-get update && apt-get install -y \
+    git curl libpng-dev libonig-dev libxml2-dev zip unzip libpq-dev \
+    && docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd \
+    && a2enmod rewrite
 
-# composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+# Устанавливаем Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# каталоги
-RUN mkdir -p /var/www/html /opt/laravel-patches
+# Указываем рабочую директорию
 WORKDIR /var/www/html
 
-# entrypoint
-COPY entrypoint.sh /usr/local/bin/php_entrypoint.sh
-RUN chmod +x /usr/local/bin/php_entrypoint.sh
+# Копируем только то, что нужно для установки зависимостей (оптимизация кэша Docker)
+COPY composer.json composer.lock ./
 
-CMD ["bash", "/usr/local/bin/php_entrypoint.sh"]
+# Устанавливаем зависимости (если они есть)
+RUN if [ -f composer.json ]; then composer install --no-interaction --no-dev --no-scripts; fi
+
+# Копируем всё остальное
+COPY . .
+
+# Устанавливаем права
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Стандартная команда Apache
+CMD ["apache2-foreground"]

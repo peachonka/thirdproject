@@ -1,26 +1,25 @@
 # services/rust-iss/Dockerfile
-FROM rust:1.75-slim-bookworm AS builder
+FROM ubuntu:22.04 AS builder
+
+# Установи Rust nightly или beta (они поддерживают edition 2024)
+RUN apt-get update && \
+    apt-get install -y curl gcc libssl-dev pkg-config && \
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain nightly
+
+ENV PATH="/root/.cargo/bin:${PATH}"
 
 WORKDIR /app
-
-# Кэшируем зависимости
-COPY Cargo.toml Cargo.lock ./
-RUN mkdir src && echo "fn main() {}" > src/main.rs
-RUN cargo build --release
-RUN rm -rf src
-
-# Копируем реальный код
 COPY . .
 
-# Собираем
+# Обнови зависимости до совместимых версий
+RUN cargo update -p home --precise "0.5.5"  # Используем старую версию без edition 2024
+
 RUN cargo build --release
 
-# Финальный образ
-FROM debian:bookworm-slim
-RUN apt-get update && apt-get install -y \
-    libssl3 ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+FROM ubuntu:22.04
+RUN apt-get update && apt-get install -y libssl3 && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY --from=builder /app/target/release/rust_iss /app/rust_iss
 
-COPY --from=builder /app/target/release/rust-iss /usr/local/bin/
-
-CMD ["rust-iss"]
+EXPOSE 3001
+CMD ["./rust_iss"]
